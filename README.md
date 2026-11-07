@@ -4,8 +4,11 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
 [![Material UI](https://img.shields.io/badge/Material_UI-6.1-007FFF?logo=mui&logoColor=white)](https://mui.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-A React and TypeScript learning project combining a marketing website, user registration and login, and a customer dashboard. Built with **Vite**, **Material UI**, **React Router**, and **Axios**, the frontend demonstrates reusable components, typed API services, and a shared application theme.
+A React and TypeScript learning project combining a marketing website, user registration and login, and a customer dashboard. Built with **Vite**, **Material UI**, **React Router**, and **Axios**, the frontend demonstrates reusable components, typed API services, and a shared application theme. NestJs 6_1 backend is used for authentication, users, and customers.
+
+(Note:Backend is updated and frontend needs some updates to work with the new backend)
 
 ## 🖼️ Application Preview
 
@@ -83,6 +86,8 @@ frontend_react_p8/                  # Application directory
 ├── package.json                   # Dependencies and scripts
 ├── .env.example                   # Optional API base URL configuration
 ├── playwright.config.ts           # Browser test configuration
+├── LICENSE                        # MIT license
+├── DISCLAIMER.md                  # Demo scope and usage limitations
 ├── package-lock.json              # npm lockfile
 ├── pnpm-lock.yaml                 # pnpm lockfile
 ├── tsconfig*.json                 # TypeScript configuration
@@ -215,6 +220,17 @@ The capture workflow saves `marketing.png`, `login.png`, `customers.png`, `mobil
 
 ---
 
-## 📄 License
+## 📄 License & Disclaimer
 
-No project license file is currently included. Third-party dependencies retain their respective licenses.
+Copyright © 2026 Burhan Saadi. Licensed under the [MIT License](LICENSE).
+Keep the copyright and permission notice in copies or substantial portions
+of the software. Third-party dependencies, templates, fonts, and assets retain
+their respective licenses and notices.
+
+> **Disclaimer:** This is a learning and demonstration project, provided
+> **"AS IS"** without warranty under the MIT License. Review it before production
+> use. Customer actions can modify real data when connected to a backend;
+> use fictional data in a test environment while evaluating it. Screenshots and
+> browser tests use mocked API responses and do not verify a live backend.
+> Backend authorization, secure deployment, backups, and data handling remain
+> your responsibility. See the full [disclaimer](DISCLAIMER.md).

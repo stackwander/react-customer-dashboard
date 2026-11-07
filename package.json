@@ -2,6 +2,7 @@
   "name": "frontend_react_p8",
   "private": true,
   "version": "0.0.0",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",

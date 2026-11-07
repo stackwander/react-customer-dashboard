@@ -20,7 +20,8 @@ import ColorModeSelect from '../../theme/ColorModeSelect';
 
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../../api/auth/AuthService';
-import { useState, useEffect } from 'react'; // Import useState
+import { Link as RouterLink } from 'react-router-dom';
+import { requestError } from '../../api/http';
 
 
 const Card = styled(MuiCard)(({ theme }) => ({
@@ -73,9 +74,8 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate(); //added to navigate to dashboard
   const [loginError, setLoginError] = React.useState<string | null>(null);
-  const [redirectToDashboard, setRedirectToDashboard] = useState(false); // New state variable
-  const [usrName, setusrName ] = React.useState<string|null>(null);      // New state variable, use Redux for complex state management
-  const [usrEmail, setusrEmail ] = React.useState<string|null>(null);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const submitting = React.useRef(false);
 
   //setting visiability of forgot password
   const handleClickOpen = () => {
@@ -88,55 +88,27 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (emailError || passwordError) {
-      
-      return;
-    }
-
+    if (!validateInputs() || submitting.current) return;
+    submitting.current = true;
+    setIsSubmitting(true);
+    setLoginError(null);
     const data = new FormData(event.currentTarget);
-
-        const username = data.get('email') as string; // Using email as username
-        const password = data.get('password') as string;
-
-        //CALLING SERVICE HERE TO CREATE NEW USER
-        try 
-        {
-          
-          const tokens = await AuthService.login({ username, password,});
-          
-          if (tokens) {
-
-            //Check IF- Tokens really exist, otherwise through error
-            const accesstoken  = tokens.access_token;
-            const refreshToken = tokens.refresh_token;
-
-            localStorage.setItem('accessToken', accesstoken);    // Store the token securely in local storage
-            localStorage.setItem('refreshToken', refreshToken);  // Store the token securely in local storage
-
-            setusrName(tokens.fullname);
-            setusrEmail(username);
-            setRedirectToDashboard(true);       
-          } else {
-            // Handle the case where the token is missing in the response
-            console.error("Login successful, but token not found in response:");
-            setLoginError("Login failed. Unexpected response from server.");
-          }
-        }
-        catch(error) {
-          console.error('Error Logging In:', error);
-          setLoginError("Login Failed. Please check your credentials."); // Set the error message state        
-        }       
+    try {
+      await AuthService.login({ username: String(data.get('email')).trim(),
+        password: String(data.get('password')) }, data.get('remember') === 'on');
+      navigate('/dashboard', { replace: true });
+    } catch (error) {
+      setLoginError(requestError(error, 'Sign in failed. Check your credentials and try again.'));
+    } finally {
+      submitting.current = false;
+      setIsSubmitting(false);
+    }
   };
 
-  useEffect(() => {
-    if (redirectToDashboard) {
-      navigate('/dashboard', { state: { fullname: usrName, email: usrEmail } });
-    }
-  }, [redirectToDashboard, navigate, usrName, usrEmail]); //effect will re-execute if any of the dependency changes
-
+  const formRef = React.useRef<HTMLFormElement>(null);
   const validateInputs = () => {
-    const email = document.getElementById('email') as HTMLInputElement;
-    const password = document.getElementById('password') as HTMLInputElement;
+    const email = formRef.current!.elements.namedItem('email') as HTMLInputElement;
+    const password = formRef.current!.elements.namedItem('password') as HTMLInputElement;
 
     let isValid = true;
 
@@ -177,6 +149,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
           </Typography>
           <Box
             component="form"
+            ref={formRef}
             onSubmit={handleSubmit}
             noValidate
             sx={{
@@ -213,7 +186,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-                autoFocus
                 required
                 fullWidth
                 variant="outlined"
@@ -221,7 +193,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
               />
             </FormControl>
             <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
+              control={<Checkbox name="remember" color="primary" />}
               label="Remember me"
             />
             <ForgotPassword open={open} handleClose={handleClose} />
@@ -229,9 +201,9 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
               type="submit"
               fullWidth
               variant="contained"
-              onClick={validateInputs}
+              disabled={isSubmitting}
             >
-              Sign in
+              {isSubmitting ? 'Signing in…' : 'Sign in'}
             </Button>
             <Link
               component="button"
@@ -243,7 +215,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
               Forgot your password?
             </Link>
             {loginError && ( // Conditionally render the error message
-              <Typography color="error" align="center">
+              <Typography role="alert" color="error" align="center">
                 {loginError}
               </Typography>
             )}
@@ -253,7 +225,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             <Button
               fullWidth
               variant="outlined"
-              onClick={() => alert('Sign in with Google')}
+              disabled
               startIcon={<GoogleIcon />}
             >
               Sign in with Google
@@ -261,7 +233,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             <Button
               fullWidth
               variant="outlined"
-              onClick={() => alert('Sign in with Facebook')}
+              disabled
               startIcon={<FacebookIcon />}
             >
               Sign in with Facebook
@@ -269,7 +241,8 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             <Typography sx={{ textAlign: 'center' }}>
               Don&apos;t have an account?{' '}
               <Link
-                href="/material-ui/getting-started/templates/sign-in/"
+                component={RouterLink}
+                to="/signup"
                 variant="body2"
                 sx={{ alignSelf: 'center' }}
               >

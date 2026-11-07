@@ -7,14 +7,15 @@ import { USER_API_URL } from '../apiconfig';
 export class UserService {
   
   static async createUser(createUserDto: CreateUserDto) {
-    console.log('Creating user ...');
+
     try {
       const response = await axios.post(USER_API_URL, createUserDto, {
+        timeout: 15_000,
         headers: {
           'Content-Type': 'application/json',
         },
       });
-      console.log('Created user ...');
+
       return response.data;
     } catch (error) {
       console.error('Error creating user:', error);

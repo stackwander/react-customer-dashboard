@@ -19,7 +19,10 @@ declare module '@mui/material/styles/createPalette' {
     900: string;
   }
 
-  interface PaletteColor extends ColorRange {}
+  interface PaletteColor extends ColorRange {
+    // Custom shades used by the shared theme.
+    50: string;
+  }
 
   interface Palette {
     baseShadow: string;
@@ -394,10 +397,6 @@ export const shape = {
   borderRadius: 8,
 };
 
-// @ts-ignore
-const defaultShadows: Shadows = [
-  'none',
-  'var(--template-palette-baseShadow)',
-  ...defaultTheme.shadows.slice(2),
-];
+const defaultShadows: Shadows = [...defaultTheme.shadows];
+defaultShadows[1] = 'var(--template-palette-baseShadow)';
 export const shadows = defaultShadows;

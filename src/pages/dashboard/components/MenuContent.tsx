@@ -12,7 +12,7 @@ import InfoRoundedIcon from '@mui/icons-material/InfoRounded';
 import HelpRoundedIcon from '@mui/icons-material/HelpRounded';
 import { ReceiptLong } from '@mui/icons-material';
 import { Category } from '@mui/icons-material';
-import React from 'react';
+
 
 
 const mainListItems = [
@@ -29,23 +29,17 @@ const secondaryListItems = [
 ];
 
 interface MenuContentProps {
-  onMenuClick: (view: string) => void; // Define the prop type
+  activeView: string;
+  onMenuClick: (view: string) => void;
 }
 
-export default function MenuContent({ onMenuClick }: MenuContentProps) {
-  const [selectedItem, setSelectedItem] = React.useState('home'); //inititial state
-  const handleItemClick = (text: string) => {
-    setSelectedItem(text.toLowerCase()); 
-    onMenuClick(text.toLowerCase());
-  };
-
-
+export default function MenuContent({ activeView, onMenuClick }: MenuContentProps) {
   return (
     <Stack sx={{ flexGrow: 1, p: 1, justifyContent: 'space-between' }}>
       <List dense>
         {mainListItems.map((item, index) => (
           <ListItem key={index} disablePadding sx={{ display: 'block' }}>
-            <ListItemButton selected= {selectedItem === item.text.toLowerCase()} onClick={() => handleItemClick(item.text)}>
+            <ListItemButton selected={activeView === item.text.toLowerCase()} disabled={['Products', 'Orders'].includes(item.text)} onClick={() => onMenuClick(item.text.toLowerCase())}>
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>
@@ -56,7 +50,7 @@ export default function MenuContent({ onMenuClick }: MenuContentProps) {
       <List dense>
         {secondaryListItems.map((item, index) => (
           <ListItem key={index} disablePadding sx={{ display: 'block' }}>
-            <ListItemButton>
+            <ListItemButton disabled>
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
             </ListItemButton>

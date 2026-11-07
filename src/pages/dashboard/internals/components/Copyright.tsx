@@ -1,8 +1,7 @@
-import * as React from 'react';
 import Link from '@mui/material/Link';
-import Typography from '@mui/material/Typography';
+import Typography, { type TypographyProps } from '@mui/material/Typography';
 
-export default function Copyright(props: any) {
+export default function Copyright(props: TypographyProps) {
   return (
     <Typography
       variant="body2"
@@ -16,8 +15,8 @@ export default function Copyright(props: any) {
       ]}
     >
       {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Sitemark
+      <Link color="inherit" href="/">
+        React Dashboard
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}

@@ -9,13 +9,19 @@ import NotificationsRoundedIcon from '@mui/icons-material/NotificationsRounded';
 
 import MenuButton from './MenuButton';
 import MenuContent from './MenuContent';
+import { useAuth } from '../../../api/auth/useAuth';
 
 interface SideMenuMobileProps {
-  open: boolean | undefined;
+  fullName: string;
+  email: string;
+  activeView: string;
+  onMenuClick: (view: string) => void;
+  open: boolean;
   toggleDrawer: (newOpen: boolean) => () => void;
 }
 
-export default function SideMenuMobile({ open, toggleDrawer }: SideMenuMobileProps) {
+export default function SideMenuMobile({ open, toggleDrawer, fullName, email, activeView, onMenuClick }: SideMenuMobileProps) {
+  const { logout } = useAuth();
   return (
     <Drawer
       anchor="right"
@@ -42,25 +48,28 @@ export default function SideMenuMobile({ open, toggleDrawer }: SideMenuMobilePro
           >
             <Avatar
               sizes="small"
-              alt="Riley Carter"
-              src="/static/images/avatar/7.jpg"
+              alt={fullName}
               sx={{ width: 24, height: 24 }}
             />
             <Typography component="p" variant="h6">
-              Riley Carter
+              {fullName}
             </Typography>
           </Stack>
           <MenuButton showBadge>
             <NotificationsRoundedIcon />
           </MenuButton>
         </Stack>
+        <Typography variant="caption" sx={{ px: 3, pb: 2 }}>{email}</Typography>
         <Divider />
         <Stack sx={{ flexGrow: 1 }}>
-          <MenuContent />
+          <MenuContent activeView={activeView} onMenuClick={(view) => {
+            onMenuClick(view);
+            toggleDrawer(false)();
+          }} />
           <Divider />
         </Stack>
         <Stack sx={{ p: 2 }}>
-          <Button variant="outlined" fullWidth startIcon={<LogoutRoundedIcon />}>
+          <Button variant="outlined" fullWidth startIcon={<LogoutRoundedIcon />} onClick={logout}>
             Logout
           </Button>
         </Stack>

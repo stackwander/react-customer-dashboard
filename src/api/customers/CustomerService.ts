@@ -1,76 +1,35 @@
-import axios from 'axios'; //importing
 import { CreateCustomerDto } from './CreateCustomerDto';
-import { CUSTOMER_API_URL } from '../apiconfig';    
-
-//We are using AXIOS LIBRARY TO CALL BACKEND SERVICES
+import { CustomerDto } from './CustomerDto';
+import { CUSTOMER_API_URL } from '../apiconfig';
+import { authenticatedApi } from '../http';
 
 export class CustomerService {
-  static async createCustomer(createCustomerDto: CreateCustomerDto) {
-    //console.log('Creating Customer ...');
-    try {
-            const token = localStorage.getItem('accessToken');
-            const response = await axios.post(CUSTOMER_API_URL, createCustomerDto, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                },
-      });
-      
-      return response.data;
-    } catch (error) {
-      console.error('Error creating Customer:', error);
-      throw error;
-    }
+  static async createCustomer(customer: CreateCustomerDto): Promise<CustomerDto> {
+    const { data } = await authenticatedApi.post(CUSTOMER_API_URL, customer);
+    return data;
   }
-  
-  static async getAllCustomers() {
-    
-    //console.log('Inside ...');
-    try {
-        const token = localStorage.getItem('accessToken');//browser storage
-        const response = await axios.get(CUSTOMER_API_URL, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`, // Add Authorization header
-            },
+  static async getCustomers(page: number, pageSize: number): Promise<{ rows: CustomerDto[]; total: number }> {
+    const { data } = await authenticatedApi.get(CUSTOMER_API_URL, {
+      params: { offset: page * pageSize, limit: pageSize },
     });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching Customers:', error);
-      throw error;
+    const customers = Array.isArray(data) ? data : data?.items;
+    if (!Array.isArray(customers) || customers.some((row) => !row || !row.customerId)) {
+      throw new Error('The server returned an invalid customer list.');
     }
+    return Array.isArray(data)
+      ? { rows: customers.slice(page * pageSize, (page + 1) * pageSize), total: customers.length }
+      : { rows: customers, total: Number(data.total) || 0 };
   }
-
-  static async getCustomerById(id: string) {
-    try {
-        const token = localStorage.getItem('accessToken');//browser storage
-        const response = await axios.get(`${CUSTOMER_API_URL}/${id}`, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                },
-            });
-        return response.data;
-    } catch (error) {
-      console.error('Error fetching Customer:', error);
-      throw error;
-    }
+  static async getCustomerById(id: string): Promise<CustomerDto> {
+    const { data } = await authenticatedApi.get(`${CUSTOMER_API_URL}/${encodeURIComponent(id)}`);
+    return data;
   }
-
-  //TODO: Change based on how id is expected by backend in url or body as part of sent json
-  static async updateCustomer(id: string, updateCustomerDto: Partial<CreateCustomerDto>) {
-    try {
-        const token = localStorage.getItem('accessToken');//browser storage
-        const response = await axios.patch(`${CUSTOMER_API_URL}/${id}`, updateCustomerDto, {
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-                },
-            } );
-        return response.data;
-    } catch (error) {
-        console.error('Error updating Customer:', error);
-      throw error;
-    }
+  static async updateCustomer(id: string, customer: Partial<CreateCustomerDto>): Promise<CustomerDto> {
+    await authenticatedApi.patch(`${CUSTOMER_API_URL}/${encodeURIComponent(id)}`, customer);
+    // Some backend versions return an update result instead of the saved record.
+    return this.getCustomerById(id);
+  }
+  static async deleteCustomer(id: string): Promise<void> {
+    await authenticatedApi.delete(`${CUSTOMER_API_URL}/${encodeURIComponent(id)}`);
   }
 }

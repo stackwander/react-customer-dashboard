@@ -14,6 +14,7 @@ const drawerWidth = 240;
 
 //For receving data from Dashboard as properties
 interface SideMenuProps {
+  activeView: string;
   fullName: string;
   email: string;
   onMenuClick: (view: string) => void;
@@ -31,7 +32,7 @@ const Drawer = styled(MuiDrawer)({
   },
 });
 
-export default function SideMenu({fullName, email, onMenuClick }: SideMenuProps) {
+export default function SideMenu({fullName, email, activeView, onMenuClick }: SideMenuProps) {
   return (
     <Drawer
       variant="permanent"
@@ -52,7 +53,7 @@ export default function SideMenu({fullName, email, onMenuClick }: SideMenuProps)
         <SelectContent />
       </Box>
       <Divider />
-      <MenuContent onMenuClick={onMenuClick} />
+      <MenuContent activeView={activeView} onMenuClick={onMenuClick} />
       <Stack
         direction="row"
         sx={{
@@ -65,8 +66,7 @@ export default function SideMenu({fullName, email, onMenuClick }: SideMenuProps)
       >
         <Avatar
           sizes="small"
-          alt="Riley Carter"
-          src="/static/images/avatar/7.jpg"
+          alt={fullName}
           sx={{ width: 36, height: 36 }}
         />
         <Box sx={{ mr: 'auto' }}>

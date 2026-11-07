@@ -1,20 +1,20 @@
-#root {
+.demo-app {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
 }
 
-.logo {
+.demo-app .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
 }
-.logo:hover {
+.demo-app .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
-.logo.react:hover {
+.demo-app .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 
@@ -28,15 +28,15 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
+  .demo-app a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
   }
 }
 
-.card {
+.demo-app .card {
   padding: 2em;
 }
 
-.read-the-docs {
+.demo-app .read-the-docs {
   color: #888;
 }

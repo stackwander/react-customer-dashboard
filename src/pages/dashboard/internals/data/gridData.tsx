@@ -20,7 +20,7 @@ function getDaysInMonth(month: number, year: number) {
   return days;
 }
 
-function renderSparklineCell(params: GridCellParams<SparkLineData, any>) {
+function renderSparklineCell(params: GridCellParams<Record<string, unknown>, SparkLineData>) {
   const data = getDaysInMonth(4, 2024);
   const { value, colDef } = params;
 
@@ -57,7 +57,7 @@ function renderStatus(status: 'Online' | 'Offline') {
 }
 
 export function renderAvatar(
-  params: GridCellParams<{ name: string; color: string }, any, any>,
+  params: GridCellParams<Record<string, unknown>, { name: string; color: string }>,
 ) {
   if (params.value == null) {
     return '';
@@ -84,7 +84,7 @@ export const columns: GridColDef[] = [
     headerName: 'Status',
     flex: 0.5,
     minWidth: 80,
-    renderCell: (params) => renderStatus(params.value as any),
+    renderCell: (params) => renderStatus(params.value === 'Online' ? 'Online' : 'Offline'),
   },
   {
     field: 'users',

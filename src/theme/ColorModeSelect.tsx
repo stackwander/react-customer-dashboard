@@ -13,10 +13,7 @@ export default function ColorModeSelect(props: SelectProps) {
       onChange={(event) =>
         setMode(event.target.value as 'system' | 'light' | 'dark')
       }
-      SelectDisplayProps={{
-        // @ts-ignore
-        'data-screenshot': 'toggle-mode',
-      }}
+      inputProps={{ 'aria-label': 'Color theme' }}
       {...props}
     >
       <MenuItem value="system">System</MenuItem>

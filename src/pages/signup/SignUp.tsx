@@ -16,7 +16,8 @@ import { styled } from '@mui/material/styles';
 import AppTheme from '../../theme/AppTheme';
 import { GoogleIcon, FacebookIcon, SitemarkIcon } from './CustomIcons';
 import ColorModeSelect from '../../theme/ColorModeSelect';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { requestError } from '../../api/http';
 
 //For calling backend
 import { UserService } from '../../api/users/UserService';
@@ -72,12 +73,14 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [nameErrorMessage, setNameErrorMessage] = React.useState('');
   const navigate = useNavigate(); //react hook created for navigation
 
-  //Validation logic is called within onClick handler of the Signup button
-  //While the handleSubmit function handles the form submission itself
+  const formRef = React.useRef<HTMLFormElement>(null);
+  const submitting = React.useRef(false);
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [signupError, setSignupError] = React.useState<string | null>(null);
   const validateInputs = () => {
-    const email = document.getElementById('email') as HTMLInputElement;
-    const password = document.getElementById('password') as HTMLInputElement;
-    const name = document.getElementById('name') as HTMLInputElement;
+    const email = formRef.current!.elements.namedItem('email') as HTMLInputElement;
+    const password = formRef.current!.elements.namedItem('password') as HTMLInputElement;
+    const name = formRef.current!.elements.namedItem('name') as HTMLInputElement;
 
     let isValid = true;
 
@@ -99,7 +102,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       setPasswordErrorMessage('');
     }
 
-    if (!name.value || name.value.length < 1) {
+    if (!name.value.trim()) {
       setNameError(true);
       setNameErrorMessage('Name is required.');
       isValid = false;
@@ -108,41 +111,31 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       setNameErrorMessage('');
     }
 
-    console.log('Input Validated');
 
     return isValid;
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log('Entered handle submit');
-    if (nameError || emailError || passwordError) {
-      
-      return;
-    }
+    if (!validateInputs() || submitting.current) return;
+    submitting.current = true;
+    setIsSubmitting(true);
+    setSignupError(null);
     const data = new FormData(event.currentTarget);
-    const fullname = data.get('name') as string; // Assuming 'name' field holds the full name
-    const username = data.get('email') as string; // Using email as username
-    const password = data.get('password') as string;
-    const updateinmail = (data.get('allowExtraEmails') as string) === 'on'; // Assuming the checkbox name is "allowExtraEmails"
-   
-    //CALLING SERVICE HERE TO CREATE NEW USER
     try {
-      const newUser = await UserService.createUser({
-        fullname,
-        username,
-        password,
-        updateinmail, 
+      await UserService.createUser({
+        fullname: String(data.get('name')).trim(),
+        username: String(data.get('email')).trim(),
+        password: String(data.get('password')),
+        updateinmail: data.get('allowExtraEmails') === 'on',
       });
-
-      console.log('New user created:', newUser);
-      // hook defined above for navigation 
-      navigate('/login');
+      navigate('/login', { replace: true });
     } catch (error) {
-      console.error('Signup failed:', error);
-      // Handle signup error (e.g., display an error message)
+      setSignupError(requestError(error, 'Could not create your account. Please try again.'));
+    } finally {
+      submitting.current = false;
+      setIsSubmitting(false);
     }
-
   };
 
   return (
@@ -161,6 +154,8 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
           </Typography>
           <Box
             component="form"
+            ref={formRef}
+            noValidate
             onSubmit={handleSubmit}
             sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
           >
@@ -190,7 +185,8 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 variant="outlined"
                 error={emailError}
                 helperText={emailErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
+                type="email"
+                color={emailError ? 'error' : 'primary'}
               />
             </FormControl>
             <FormControl>
@@ -210,17 +206,18 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
               />
             </FormControl>
             <FormControlLabel
-              control={<Checkbox value="allowExtraEmails" color="primary" />}
+              control={<Checkbox name="allowExtraEmails" color="primary" />}
               label="I want to receive updates via email."
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              onClick={validateInputs}
+              disabled={isSubmitting}
             >
-              Sign up
+              {isSubmitting ? 'Creating account…' : 'Sign up'}
             </Button>
+            {signupError && <Typography role="alert" color="error">{signupError}</Typography>}
           </Box>
           <Divider>
             <Typography sx={{ color: 'text.secondary' }}>or</Typography>
@@ -229,7 +226,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             <Button
               fullWidth
               variant="outlined"
-              onClick={() => alert('Sign up with Google')}
+              disabled
               startIcon={<GoogleIcon />}
             >
               Sign up with Google
@@ -237,7 +234,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             <Button
               fullWidth
               variant="outlined"
-              onClick={() => alert('Sign up with Facebook')}
+              disabled
               startIcon={<FacebookIcon />}
             >
               Sign up with Facebook
@@ -245,7 +242,8 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             <Typography sx={{ textAlign: 'center' }}>
               Already have an account?{' '}
               <Link
-                href="/material-ui/getting-started/templates/sign-in/"
+                component={RouterLink}
+                to="/login"
                 variant="body2"
                 sx={{ alignSelf: 'center' }}
               >
